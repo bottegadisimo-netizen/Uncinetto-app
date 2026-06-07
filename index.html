@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Uncinetto Pro - Schema Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         * { box-sizing: border-box; }
         body { font-family: -apple-system, sans-serif; margin: 0; background: #f0f2f5; color: #1c1e21; padding: 10px; }
-        .container { max-width: 1000px; margin: 0 auto; }
+        .container { max-width: 1200px; margin: 0 auto; }
         .card { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; border: 1px solid #e1e4e8; }
         h1, h2, h3 { color: #2c3e50; margin-top: 0; }
         label { display: block; margin: 12px 0 5px; font-weight: 600; font-size: 14px; }
@@ -27,18 +28,21 @@
         .schema-btn:hover { border-color: #007bff; background: #e7f3ff; }
         .schema-btn.active { border-color: #007bff; background: #007bff; color: white; }
         
+        .size-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 10px 0; }
+        .size-btn { padding: 10px; border: 2px solid #ddd; background: #f8f9fa; cursor: pointer; border-radius: 8px; font-weight: 600; transition: 0.3s; text-align: center; }
+        .size-btn:hover { border-color: #007bff; background: #e7f3ff; }
+        .size-btn.active { border-color: #007bff; background: #007bff; color: white; }
+        
         .color-section { margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff; }
         .color-item { display: grid; grid-template-columns: 60px 1fr 1fr 60px; gap: 10px; align-items: end; margin-bottom: 10px; }
-        .color-preview { width: 60px; height: 40px; border: 2px solid #ddd; border-radius: 5px; }
         
-        .grid-output { font-family: monospace; white-space: pre; background: #f5f5f5; border: 2px solid #ddd; padding: 15px; border-radius: 8px; overflow-x: auto; max-height: 600px; overflow-y: auto; line-height: 1.8; font-size: 14px; }
-        .grid-croce { display: grid; gap: 1px; background: #ddd; padding: 5px; border-radius: 8px; max-height: 600px; overflow-y: auto; }
-        .grid-cell { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; border: 1px solid #999; }
+        .schema-grid { display: flex; flex-wrap: wrap; gap: 2px; background: #f5f5f5; padding: 10px; border-radius: 8px; max-height: 700px; overflow-y: auto; }
+        .schema-cell { display: flex; align-items: center; justify-content: center; border: 1px solid #999; background: white; }
         
         .badge { display: inline-block; background: #007bff; color: white; padding: 6px 12px; border-radius: 12px; font-size: 12px; margin-right: 8px; }
-        .legend-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-top: 15px; }
-        .legend-item { display: flex; align-items: center; font-size: 13px; background: #f8f9fa; padding: 8px; border-radius: 5px; border: 1px solid #ddd; }
-        .legend-symbol { width: 35px; height: 35px; margin-right: 8px; border: 1px solid #000; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 3px; }
+        .legend-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 15px; }
+        .legend-item { display: flex; flex-direction: column; align-items: center; font-size: 12px; background: #f8f9fa; padding: 10px; border-radius: 5px; border: 1px solid #ddd; }
+        .legend-canvas { width: 100%; height: 60px; border: 1px solid #ddd; border-radius: 3px; }
         
         .report { background: #fff3cd; padding: 20px; border-left: 6px solid #ffc107; border-radius: 8px; }
         
@@ -49,8 +53,7 @@
         .tab-content.active { display: block; }
         
         @media print {
-            .schema-buttons, button, label, input, select, .tabs, .tab { display: none !important; }
-            .grid-output { background: white; border: 1px solid #000; }
+            .schema-buttons, .size-buttons, button, label, input, select, .tabs, .tab { display: none !important; }
         }
     </style>
 </head>
@@ -59,7 +62,7 @@
 <div class="container">
     <div class="card">
         <h1>🧶 Uncinetto Pro - Schema Generator</h1>
-        <p>Converti foto in schemi con simboli standard internazionali</p>
+        <p>Genera schemi con maglie disegnate realistiche</p>
     </div>
 
     <div class="tabs">
@@ -94,13 +97,22 @@
             <label>Foto</label>
             <input type="file" id="uploadFoto" accept="image/*">
             <label>Larghezza Schema (punti)</label>
-            <input type="number" id="larghezzaPunti" value="40" min="10" max="200">
+            <input type="number" id="larghezzaPunti" value="30" min="10" max="100">
+            
             <label style="margin-top: 15px;">Tipo di Schema:</label>
             <div class="schema-buttons">
                 <div class="schema-btn active" onclick="selectSchema(this, 'uncinetto')">🧶 Uncinetto</div>
                 <div class="schema-btn" onclick="selectSchema(this, 'ferri')">📌 Ferri</div>
                 <div class="schema-btn" onclick="selectSchema(this, 'puntocroce')">✕ Punto Croce</div>
             </div>
+            
+            <label style="margin-top: 15px;">Dimensione Maglie:</label>
+            <div class="size-buttons">
+                <div class="size-btn" onclick="selectSize(this, 'small')">Piccola</div>
+                <div class="size-btn active" onclick="selectSize(this, 'medium')">Media</div>
+                <div class="size-btn" onclick="selectSize(this, 'large')">Grande</div>
+            </div>
+            
             <button class="btn-primary" onclick="elaboraProgetto()">ELABORA SCHEMA</button>
         </div>
     </div>
@@ -127,10 +139,10 @@
     <!-- RISULTATI -->
     <div id="risultati" style="display:none;">
         <div class="card">
-            <button class="btn-pdf" onclick="window.print()">📥 SALVA IN PDF</button>
+            <button class="btn-pdf" onclick="scaricaPDF()">📥 SALVA IN PDF</button>
         </div>
 
-        <div class="card">
+        <div id="pdfContent" class="card">
             <h2>🖼️ Schema</h2>
             <p><span class="badge" id="typoBadge">Uncinetto</span> <span id="statoSchema" style="color:#666; font-size:12px;"></span></p>
             <div id="schemaContainer"></div>
@@ -145,10 +157,15 @@
     </div>
 </div>
 
-<canvas id="canvasNascosto" style="display:none;"></canvas>
-
 <script>
 let selectedSchema = 'uncinetto';
+let selectedSize = 'medium';
+
+const sizes = {
+    small: 40,
+    medium: 60,
+    large: 80
+};
 
 let colori = {
     uncinetto: [
@@ -176,22 +193,28 @@ let colori = {
     ]
 };
 
-const simboli = {
-    uncinetto: {
-        0: { sym: "o", desc: "Catenella" },
-        1: { sym: "x", desc: "Maglia bassa" },
-        2: { sym: "T", desc: "Maglia mezza alta" },
-        3: { sym: "|", desc: "Maglia alta" },
-        4: { sym: "||", desc: "Maglia altissima" }
-    },
-    ferri: {
-        0: { sym: "□", desc: "Diritto" },
-        1: { sym: "•", desc: "Rovescio" },
-        2: { sym: "O", desc: "Gettato" },
-        3: { sym: "/", desc: "Dim. destra" },
-        4: { sym: "\\", desc: "Dim. sinistra" }
-    }
-};
+const puntiUncinetto = [
+    { nome: "Catenella", idx: 0 },
+    { nome: "Maglia bassissima", idx: 1 },
+    { nome: "Maglia bassa", idx: 2 },
+    { nome: "Maglia mezza alta", idx: 3 },
+    { nome: "Maglia alta", idx: 4 },
+    { nome: "Maglia altissima", idx: 5 },
+    { nome: "Maglie chiuse insieme", idx: 6 },
+    { nome: "Punto nocciolina", idx: 7 }
+];
+
+const puntiFerri = [
+    { nome: "Maglia diritto", idx: 0 },
+    { nome: "Maglia rovescio", idx: 1 },
+    { nome: "Gettato", idx: 2 },
+    { nome: "2 insieme destra", idx: 3 },
+    { nome: "2 insieme sinistra", idx: 4 },
+    { nome: "Aumento", idx: 5 },
+    { nome: "Diminuzione", idx: 6 },
+    { nome: "Incrocio destra", idx: 7 },
+    { nome: "Incrocio sinistra", idx: 8 }
+];
 
 function switchTab(tab, id) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -203,6 +226,12 @@ function switchTab(tab, id) {
 function selectSchema(el, type) {
     selectedSchema = type;
     document.querySelectorAll('.schema-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+}
+
+function selectSize(el, size) {
+    selectedSize = size;
+    document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
     el.classList.add('active');
 }
 
@@ -263,7 +292,7 @@ function elaboraProgetto() {
 
 function processImage(img) {
     const width = parseInt(document.getElementById('larghezzaPunti').value);
-    const canvas = document.getElementById('canvasNascosto');
+    const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     const scale = width / img.width;
     const height = Math.round(img.height * scale);
@@ -279,7 +308,8 @@ function processImage(img) {
             const idx = (y * width + x) * 4;
             const r = data[idx], g = data[idx+1], b = data[idx+2];
             const colore = trovaColoreVicino(r, g, b);
-            row.push(colore);
+            const colorIdx = colori[selectedSchema].indexOf(colore);
+            row.push(colorIdx);
         }
         grid.push(row);
     }
@@ -293,65 +323,280 @@ function renderSchema(grid) {
     document.getElementById('statoSchema').innerHTML = `${grid.length} righe × ${grid[0].length} colonne`;
     
     let used = new Set();
-    grid.forEach(r => r.forEach(c => used.add(c.nome)));
+    grid.forEach(r => r.forEach(c => used.add(c)));
     
     if (selectedSchema === 'puntocroce') {
         renderGridPuntoCroce(grid, used);
     } else {
-        renderGridSimboli(grid, used);
+        renderGridMaglie(grid, used);
     }
     
     renderCosti();
 }
 
-function renderGridSimboli(grid, used) {
-    let output = "";
-    grid.forEach(row => {
-        row.forEach(c => {
-            const idx = colori[selectedSchema].indexOf(c);
-            const sym = simboli[selectedSchema][idx % 5].sym;
-            output += sym + " ";
-        });
-        output += "\n";
-    });
-    document.getElementById('schemaContainer').innerHTML = `<div class="grid-output">${output}</div>`;
+function renderGridMaglie(grid, used) {
+    const size = sizes[selectedSize];
+    const cols = Math.floor(1000 / (size + 2));
+    let html = `<div class="schema-grid" style="width: 100%; max-width: ${cols * (size + 2)}px;">`;
     
-    let legenda = "";
-    used.forEach(nome => {
-        const c = colori[selectedSchema].find(x => x.nome === nome);
-        const idx = colori[selectedSchema].indexOf(c);
-        const sym = simboli[selectedSchema][idx % 5];
-        legenda += `<div class="legend-item">
-            <div class="legend-symbol" style="background: ${c.hex}; color: ${getContrastColor(c.hex)}">${sym.sym}</div>
-            <div><strong>${c.nome}</strong><br><small>${sym.desc}</small></div>
-        </div>`;
-    });
-    document.getElementById('outputLegenda').innerHTML = legenda;
-}
-
-function renderGridPuntoCroce(grid, used) {
-    const cellSize = 30;
-    const maxWidth = 800;
-    const cols = Math.min(grid[0].length, Math.floor(maxWidth / cellSize));
-    let html = `<div class="grid-croce" style="grid-template-columns: repeat(${cols}, ${cellSize}px);">`;
-    
-    grid.forEach(row => {
-        row.slice(0, Math.floor(maxWidth / cellSize)).forEach(c => {
-            html += `<div class="grid-cell" style="background: ${c.hex}; color: ${getContrastColor(c.hex)}; font-size: 20px;">✕</div>`;
+    grid.forEach((row, y) => {
+        row.forEach((colorIdx, x) => {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            const colore = colori[selectedSchema][colorIdx];
+            const punti = selectedSchema === 'uncinetto' ? puntiUncinetto : puntiFerri;
+            const puntIdx = colorIdx % punti.length;
+            
+            disegnaMaglia(ctx, selectedSchema, puntIdx, colore.hex, size);
+            
+            const cellDiv = document.createElement('div');
+            cellDiv.className = 'schema-cell';
+            cellDiv.style.width = size + 'px';
+            cellDiv.style.height = size + 'px';
+            cellDiv.appendChild(canvas);
+            cellDiv.title = colore.nome;
+            html += cellDiv.outerHTML;
         });
     });
     html += '</div>';
     document.getElementById('schemaContainer').innerHTML = html;
     
-    let legenda = "";
-    used.forEach(nome => {
-        const c = colori[selectedSchema].find(x => x.nome === nome);
-        legenda += `<div class="legend-item">
-            <div class="legend-symbol" style="background: ${c.hex}; color: ${getContrastColor(c.hex)}">✕</div>
-            <div>${c.nome}</div>
+    renderLegenda(used);
+}
+
+function renderGridPuntoCroce(grid, used) {
+    const size = sizes[selectedSize];
+    const cols = Math.floor(1000 / (size + 2));
+    let html = `<div class="schema-grid" style="width: 100%; max-width: ${cols * (size + 2)}px;">`;
+    
+    grid.forEach((row, y) => {
+        row.forEach((colorIdx, x) => {
+            const colore = colori[selectedSchema][colorIdx];
+            const cellDiv = document.createElement('div');
+            cellDiv.className = 'schema-cell';
+            cellDiv.style.width = size + 'px';
+            cellDiv.style.height = size + 'px';
+            cellDiv.style.background = colore.hex;
+            cellDiv.style.color = getContrastColor(colore.hex);
+            cellDiv.innerHTML = '✕';
+            cellDiv.style.fontSize = (size * 0.6) + 'px';
+            cellDiv.title = colore.nome;
+            html += cellDiv.outerHTML;
+        });
+    });
+    html += '</div>';
+    document.getElementById('schemaContainer').innerHTML = html;
+    
+    renderLegenda(used);
+}
+
+function disegnaMaglia(ctx, tipo, puntIdx, colore, size) {
+    ctx.fillStyle = colore;
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1;
+    
+    if (tipo === 'uncinetto') {
+        disegnaUncinetto(ctx, puntIdx, size);
+    } else {
+        disegnaFerri(ctx, puntIdx, size);
+    }
+}
+
+function disegnaUncinetto(ctx, puntIdx, size) {
+    const cx = size / 2;
+    const cy = size / 2;
+    
+    switch(puntIdx) {
+        case 0: // Catenella
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, size * 0.3, size * 0.15, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            break;
+        case 1: // Maglia bassissima
+            ctx.fillRect(cx - size * 0.2, cy - size * 0.1, size * 0.4, size * 0.2);
+            ctx.strokeRect(cx - size * 0.2, cy - size * 0.1, size * 0.4, size * 0.2);
+            break;
+        case 2: // Maglia bassa
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - size * 0.25);
+            ctx.lineTo(cx - size * 0.25, cy + size * 0.25);
+            ctx.lineTo(cx + size * 0.25, cy + size * 0.25);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            break;
+        case 3: // Maglia mezza alta
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - size * 0.3);
+            ctx.lineTo(cx - size * 0.25, cy + size * 0.2);
+            ctx.lineTo(cx + size * 0.25, cy + size * 0.2);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            break;
+        case 4: // Maglia alta
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - size * 0.35);
+            ctx.lineTo(cx - size * 0.25, cy + size * 0.15);
+            ctx.lineTo(cx + size * 0.25, cy + size * 0.15);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            break;
+        case 5: // Maglia altissima
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - size * 0.4);
+            ctx.lineTo(cx - size * 0.25, cy + size * 0.1);
+            ctx.lineTo(cx + size * 0.25, cy + size * 0.1);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            break;
+        case 6: // Maglie chiuse insieme
+            ctx.beginPath();
+            ctx.arc(cx - size * 0.15, cy, size * 0.15, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(cx + size * 0.15, cy, size * 0.15, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            break;
+        case 7: // Punto nocciolina
+            ctx.beginPath();
+            ctx.arc(cx, cy - size * 0.1, size * 0.15, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(cx - size * 0.15, cy + size * 0.15, size * 0.12, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(cx + size * 0.15, cy + size * 0.15, size * 0.12, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            break;
+    }
+}
+
+function disegnaFerri(ctx, puntIdx, size) {
+    const cx = size / 2;
+    const cy = size / 2;
+    ctx.lineWidth = 2;
+    
+    switch(puntIdx) {
+        case 0: // Diritto
+            ctx.beginPath();
+            ctx.moveTo(cx - size * 0.2, cy - size * 0.3);
+            ctx.lineTo(cx - size * 0.2, cy + size * 0.3);
+            ctx.moveTo(cx, cy - size * 0.3);
+            ctx.lineTo(cx, cy + size * 0.3);
+            ctx.moveTo(cx + size * 0.2, cy - size * 0.3);
+            ctx.lineTo(cx + size * 0.2, cy + size * 0.3);
+            ctx.stroke();
+            break;
+        case 1: // Rovescio
+            ctx.beginPath();
+            ctx.moveTo(cx - size * 0.3, cy - size * 0.1);
+            ctx.lineTo(cx + size * 0.3, cy - size * 0.1);
+            ctx.moveTo(cx - size * 0.3, cy + size * 0.1);
+            ctx.lineTo(cx + size * 0.3, cy + size * 0.1);
+            ctx.stroke();
+            break;
+        case 2: // Gettato
+            ctx.beginPath();
+            ctx.arc(cx, cy, size * 0.2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            break;
+        case 3: // 2 insieme destra
+            ctx.beginPath();
+            ctx.moveTo(cx - size * 0.25, cy - size * 0.25);
+            ctx.lineTo(cx + size * 0.25, cy + size * 0.25);
+            ctx.stroke();
+            break;
+        case 4: // 2 insieme sinistra
+            ctx.beginPath();
+            ctx.moveTo(cx + size * 0.25, cy - size * 0.25);
+            ctx.lineTo(cx - size * 0.25, cy + size * 0.25);
+            ctx.stroke();
+            break;
+        case 5: // Aumento
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - size * 0.25);
+            ctx.lineTo(cx - size * 0.2, cy + size * 0.25);
+            ctx.lineTo(cx + size * 0.2, cy + size * 0.25);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            break;
+        case 6: // Diminuzione
+            ctx.beginPath();
+            ctx.moveTo(cx - size * 0.25, cy - size * 0.2);
+            ctx.lineTo(cx + size * 0.25, cy - size * 0.2);
+            ctx.lineTo(cx, cy + size * 0.25);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            break;
+        case 7: // Incrocio destra
+            ctx.beginPath();
+            ctx.arc(cx - size * 0.1, cy, size * 0.15, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(cx + size * 0.1, cy, size * 0.15, 0, Math.PI * 2);
+            ctx.stroke();
+            break;
+        case 8: // Incrocio sinistra
+            ctx.beginPath();
+            ctx.arc(cx + size * 0.1, cy, size * 0.15, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(cx - size * 0.1, cy, size * 0.15, 0, Math.PI * 2);
+            ctx.stroke();
+            break;
+    }
+}
+
+function renderLegenda(used) {
+    const punti = selectedSchema === 'uncinetto' ? puntiUncinetto : puntiFerri;
+    let html = '';
+    
+    used.forEach(colorIdx => {
+        const colore = colori[selectedSchema][colorIdx];
+        const puntIdx = colorIdx % punti.length;
+        const punto = punti[puntIdx];
+        
+        const canvas = document.createElement('canvas');
+        canvas.width = 80;
+        canvas.height = 80;
+        const ctx = canvas.getContext('2d');
+        disegnaMaglia(ctx, selectedSchema, puntIdx, colore.hex, 80);
+        
+        html += `<div class="legend-item">
+            <canvas class="legend-canvas"></canvas>
+            <strong>${colore.nome}</strong><br>
+            <small>${punto.nome}</small>
         </div>`;
     });
-    document.getElementById('outputLegenda').innerHTML = legenda;
+    
+    document.getElementById('outputLegenda').innerHTML = html;
+    
+    // Ridisegna le canvas della legenda
+    used.forEach((colorIdx, i) => {
+        const colore = colori[selectedSchema][colorIdx];
+        const puntIdx = colorIdx % punti.length;
+        const canvases = document.querySelectorAll('.legend-canvas');
+        if (canvases[i]) {
+            const ctx = canvases[i].getContext('2d');
+            disegnaMaglia(ctx, selectedSchema, puntIdx, colore.hex, 80);
+        }
+    });
 }
 
 function getContrastColor(hex) {
@@ -375,6 +620,18 @@ function renderCosti() {
         <p><strong>Ricarico:</strong> ${((ric - 1) * 100).toFixed(0)}%</p>
         <h3 style="color:#27ae60; border-top: 2px solid #27ae60; padding-top: 10px; margin-top: 15px;">PREZZO: ${totale.toFixed(2)}€</h3>
     `;
+}
+
+function scaricaPDF() {
+    const element = document.getElementById('pdfContent');
+    const opt = {
+        margin: 10,
+        filename: 'schema-uncinetto.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+    };
+    html2pdf().set(opt).save(element);
 }
 
 renderColori();
