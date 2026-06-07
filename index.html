@@ -37,17 +37,16 @@
         .color-section { margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff; }
         .color-item { display: grid; grid-template-columns: 60px 1fr 1fr 60px; gap: 10px; align-items: end; margin-bottom: 10px; }
         
-        .schema-grid { display: flex; flex-wrap: wrap; gap: 1px; background: #fff; padding: 10px; border-radius: 8px; max-height: 700px; overflow-y: auto; border: 2px solid #ddd; }
-        .schema-cell { display: flex; align-items: center; justify-content: center; border: 1px solid #999; background: white; position: relative; font-weight: bold; font-size: 14px; }
+        .schema-grid { display: grid; gap: 0; background: #000; padding: 5px; border-radius: 8px; max-height: 700px; overflow: auto; }
+        .schema-cell { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: white; border: 1px solid #000; font-weight: bold; font-size: 16px; color: #000; }
         
         .badge { display: inline-block; background: #007bff; color: white; padding: 6px 12px; border-radius: 12px; font-size: 12px; margin-right: 8px; }
         .legend-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 15px; }
-        .legend-item { display: flex; flex-direction: column; align-items: center; font-size: 12px; background: #f8f9fa; padding: 10px; border-radius: 5px; border: 1px solid #ddd; text-align: center; }
-        .legend-preview { width: 80px; height: 80px; border: 1px solid #ccc; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-bottom: 5px; font-size: 32px; }
+        .legend-item { display: flex; align-items: center; font-size: 12px; background: #f8f9fa; padding: 10px; border-radius: 5px; border: 1px solid #ddd; }
+        .legend-color { width: 30px; height: 30px; margin-right: 8px; border: 2px solid #000; border-radius: 3px; }
         
-        .step-by-step { background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #007bff; max-height: 400px; overflow-y: auto; margin-bottom: 20px; }
-        .step-riga { margin-bottom: 15px; padding: 10px; background: white; border-radius: 5px; border-left: 3px solid #007bff; }
-        .step-riga strong { color: #2c3e50; }
+        .step-by-step { background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #007bff; max-height: 400px; overflow-y: auto; }
+        .step-riga { margin-bottom: 12px; padding: 8px; background: white; border-left: 3px solid #007bff; border-radius: 3px; }
         
         .report { background: #fff3cd; padding: 20px; border-left: 6px solid #ffc107; border-radius: 8px; }
         
@@ -68,7 +67,7 @@
 <div class="container">
     <div class="card">
         <h1>🧶 Uncinetto Pro - Schema Generator</h1>
-        <p>Genera schemi con simboli standard internazionali</p>
+        <p>Genera schemi bianco e nero con simboli standard internazionali</p>
     </div>
 
     <div class="tabs">
@@ -114,9 +113,9 @@
             
             <label style="margin-top: 15px;">Dimensione Maglie:</label>
             <div class="size-buttons">
-                <div class="size-btn" onclick="selectSize(this, 'small')">Piccola (40px)</div>
-                <div class="size-btn active" onclick="selectSize(this, 'medium')">Media (60px)</div>
-                <div class="size-btn" onclick="selectSize(this, 'large')">Grande (80px)</div>
+                <div class="size-btn" onclick="selectSize(this, 'small')">Piccola (30px)</div>
+                <div class="size-btn active" onclick="selectSize(this, 'medium')">Media (40px)</div>
+                <div class="size-btn" onclick="selectSize(this, 'large')">Grande (50px)</div>
             </div>
             
             <button class="btn-primary" onclick="elaboraProgetto()">ELABORA SCHEMA</button>
@@ -149,10 +148,11 @@
         </div>
 
         <div id="pdfContent" class="card">
-            <h2>🖼️ Schema</h2>
+            <h2>🖼️ Schema Bianco e Nero</h2>
             <p><span class="badge" id="typoBadge">Uncinetto</span> <span id="statoSchema" style="color:#666; font-size:12px;"></span></p>
-            <div id="schemaContainer"></div>
-            <h3>Legenda Simboli</h3>
+            <div id="schemaContainer" style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd;"></div>
+            
+            <h3>Legenda Colori</h3>
             <div class="legend-grid" id="outputLegenda"></div>
         </div>
 
@@ -172,7 +172,7 @@
 let selectedSchema = 'uncinetto';
 let selectedSize = 'medium';
 
-const sizes = { small: 40, medium: 60, large: 80 };
+const sizes = { small: 30, medium: 40, large: 50 };
 
 let colori = {
     uncinetto: [
@@ -200,28 +200,28 @@ let colori = {
     ]
 };
 
-// Simboli standard Craft Yarn Council
+// Simboli standard internazionali
 const puntiUncinetto = [
-    { simbolo: "●", desc: "Catenella" },
-    { simbolo: "×", desc: "Maglia bassa" },
+    { simbolo: "o", desc: "Catenella" },
+    { simbolo: "x", desc: "Maglia bassa" },
     { simbolo: "T", desc: "Maglia mezza alta" },
     { simbolo: "†", desc: "Maglia alta" },
     { simbolo: "‡", desc: "Maglia altissima" },
-    { simbolo: "○", desc: "Maglia bassissima" },
+    { simbolo: ".", desc: "Maglia bassissima" },
     { simbolo: "V", desc: "Aumento" },
-    { simbolo: "Λ", desc: "Diminuzione" }
+    { simbolo: "▲", desc: "Diminuzione" }
 ];
 
 const puntiFerri = [
     { simbolo: "|", desc: "Diritto" },
-    { simbolo: "•", desc: "Rovescio" },
-    { simbolo: "○", desc: "Gettato" },
+    { simbolo: "–", desc: "Rovescio" },
+    { simbolo: "O", desc: "Gettato" },
     { simbolo: "/", desc: "2 insieme destra" },
     { simbolo: "\\", desc: "2 insieme sinistra" },
-    { simbolo: "▲", desc: "Aumento" },
-    { simbolo: "▼", desc: "Diminuzione" },
-    { simbolo: "⟲", desc: "Incrocio destra" },
-    { simbolo: "⟳", desc: "Incrocio sinistra" }
+    { simbolo: "M", desc: "Aumento" },
+    { simbolo: "K", desc: "Diminuzione" },
+    { simbolo: ">", desc: "Incrocio destra" },
+    { simbolo: "<", desc: "Incrocio sinistra" }
 ];
 
 function switchTab(tab, id) {
@@ -335,7 +335,7 @@ function renderSchema(grid) {
     if (selectedSchema === 'puntocroce') {
         renderGridPuntoCroce(grid);
     } else {
-        renderGridMaglie(grid);
+        renderGridBiancoNero(grid);
     }
     
     renderLegenda(used);
@@ -343,10 +343,10 @@ function renderSchema(grid) {
     renderCosti();
 }
 
-function renderGridMaglie(grid) {
+function renderGridBiancoNero(grid) {
     const size = sizes[selectedSize];
     const cols = grid[0].length;
-    let html = `<div class="schema-grid" style="grid-template-columns: repeat(${cols}, ${size}px);">`;
+    let html = `<div class="schema-grid" style="grid-template-columns: repeat(${cols}, ${size}px); width: fit-content;">`;
     
     grid.forEach((row, y) => {
         row.forEach((colore, x) => {
@@ -355,7 +355,7 @@ function renderGridMaglie(grid) {
             const puntIdx = colorIdx % punti.length;
             const simbolo = punti[puntIdx].simbolo;
             
-            html += `<div class="schema-cell" style="width: ${size}px; height: ${size}px; background: ${colore.hex}; color: ${getContrastColor(colore.hex)}; font-size: ${size * 0.5}px;" title="${colore.nome}">
+            html += `<div class="schema-cell" style="width: ${size}px; height: ${size}px; font-size: ${size * 0.5}px;" title="${colore.nome}">
                 ${simbolo}
             </div>`;
         });
@@ -367,11 +367,11 @@ function renderGridMaglie(grid) {
 function renderGridPuntoCroce(grid) {
     const size = sizes[selectedSize];
     const cols = grid[0].length;
-    let html = `<div class="schema-grid" style="grid-template-columns: repeat(${cols}, ${size}px);">`;
+    let html = `<div class="schema-grid" style="grid-template-columns: repeat(${cols}, ${size}px); width: fit-content;">`;
     
     grid.forEach((row, y) => {
         row.forEach((colore, x) => {
-            html += `<div class="schema-cell" style="width: ${size}px; height: ${size}px; background: ${colore.hex}; color: ${getContrastColor(colore.hex)}; font-size: ${size * 0.6}px;" title="${colore.nome}">
+            html += `<div class="schema-cell" style="width: ${size}px; height: ${size}px; background: ${colore.hex}; color: #000; font-size: ${size * 0.6}px;" title="${colore.nome}">
                 ✕
             </div>`;
         });
@@ -381,21 +381,20 @@ function renderGridPuntoCroce(grid) {
 }
 
 function renderLegenda(used) {
-    const punti = selectedSchema === 'uncinetto' ? puntiUncinetto : puntiFerri;
     let html = '';
-    
     used.forEach(nome => {
         const colore = colori[selectedSchema].find(c => c.nome === nome);
         const colorIdx = colori[selectedSchema].indexOf(colore);
-        const puntIdx = colorIdx % punti.length;
-        const punto = punti[puntIdx];
+        const punti = selectedSchema === 'uncinetto' ? puntiUncinetto : (selectedSchema === 'ferri' ? puntiFerri : null);
+        const puntIdx = punti ? colorIdx % punti.length : 0;
+        const punto = punti ? punti[puntIdx] : null;
         
         html += `<div class="legend-item">
-            <div class="legend-preview" style="background: ${colore.hex}; color: ${getContrastColor(colore.hex)};">
-                ${punto.simbolo}
+            <div class="legend-color" style="background: ${colore.hex};"></div>
+            <div>
+                <strong>${colore.nome}</strong>
+                ${punto ? `<br><small>${punto.desc}</small>` : ''}
             </div>
-            <strong>${colore.nome}</strong><br>
-            <small>${punto.desc}</small>
         </div>`;
     });
     
@@ -403,7 +402,7 @@ function renderLegenda(used) {
 }
 
 function renderPassiPasso(grid) {
-    const punti = selectedSchema === 'uncinetto' ? puntiUncinetto : puntiFerri;
+    const punti = selectedSchema === 'uncinetto' ? puntiUncinetto : (selectedSchema === 'ferri' ? puntiFerri : null);
     let html = '';
     
     grid.forEach((row, i) => {
@@ -417,9 +416,11 @@ function renderPassiPasso(grid) {
             } else {
                 if (coloreAttuale !== null) {
                     const colorIdx = colori[selectedSchema].indexOf(colori[selectedSchema].find(c => c.nome === coloreAttuale));
-                    const puntIdx = colorIdx % punti.length;
-                    const punto = punti[puntIdx];
-                    descrizione.push(`${conteggio}× <strong>${coloreAttuale}</strong> (${punto.desc})`);
+                    if (punti) {
+                        const puntIdx = colorIdx % punti.length;
+                        const punto = punti[puntIdx];
+                        descrizione.push(`${conteggio}× <strong>${coloreAttuale}</strong> (${punto.desc})`);
+                    }
                 }
                 coloreAttuale = colore.nome;
                 conteggio = 1;
@@ -428,20 +429,17 @@ function renderPassiPasso(grid) {
         
         if (coloreAttuale !== null) {
             const colorIdx = colori[selectedSchema].indexOf(colori[selectedSchema].find(c => c.nome === coloreAttuale));
-            const puntIdx = colorIdx % punti.length;
-            const punto = punti[puntIdx];
-            descrizione.push(`${conteggio}× <strong>${coloreAttuale}</strong> (${punto.desc})`);
+            if (punti) {
+                const puntIdx = colorIdx % punti.length;
+                const punto = punti[puntIdx];
+                descrizione.push(`${conteggio}× <strong>${coloreAttuale}</strong> (${punto.desc})`);
+            }
         }
         
         html += `<div class="step-riga"><strong>Riga ${i + 1}:</strong> ${descrizione.join(' → ')}</div>`;
     });
     
     document.getElementById('outputPassi').innerHTML = html;
-}
-
-function getContrastColor(hex) {
-    const [r, g, b] = hexToRgb(hex);
-    return (r * 299 + g * 587 + b * 114) / 1000 > 128 ? '#000' : '#fff';
 }
 
 function renderCosti() {
@@ -481,7 +479,6 @@ async function scaricaPDF() {
         
         let yPosition = 10;
         let remainingHeight = imgHeight;
-        let imgPosition = 0;
         
         while (remainingHeight > 0) {
             const pageHeightAvailable = pageHeight - 20;
