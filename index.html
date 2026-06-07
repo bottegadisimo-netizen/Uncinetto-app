@@ -1,9 +1,148 @@
-   let dist = Math.sqrt(Math.pow(r-c.r,2) + Math.pow(g-c.g,2) + Math.pow(b-c.b,2));
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App Uncinetto Pro - DMC & PDF</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; margin: 0; background: #f0f2f5; color: #1c1e21; line-height: 1.5; padding: 10px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .card { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; border: 1px solid #e1e4e8; }
+        h1, h2, h3 { color: #2c3e50; margin-top: 0; }
+        label { display: block; margin: 12px 0 5px; font-weight: 600; font-size: 14px; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; margin-bottom: 10px; box-sizing: border-box; }
+        button { color: white; border: none; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 8px; width: 100%; cursor: pointer; transition: 0.3s; margin-bottom: 10px; }
+        .btn-primary { background: #007bff; }
+        .btn-primary:hover { background: #0056b3; }
+        .btn-pdf { background: #e74c3c; }
+        .btn-pdf:hover { background: #c0392b; }
+        .grid-output { font-family: "Courier New", monospace; white-space: pre; background: #1a1a1a; color: #00ff00; padding: 15px; border-radius: 8px; overflow-x: auto; font-size: 11px; letter-spacing: 2px; line-height: 1.1; border: 4px solid #333; }
+        .legend-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 15px; }
+        .legend-item { display: flex; align-items: center; font-size: 13px; background: #f8f9fa; padding: 5px; border-radius: 5px; border: 1px solid #eee; }
+        .color-box { width: 20px; height: 20px; margin-right: 8px; border-radius: 3px; border: 1px solid #000; text-align: center; font-weight: bold; line-height: 20px; color: #fff; text-shadow: 1px 1px 1px #000; }
+        .report { background: #fff3cd; padding: 20px; border-left: 6px solid #ffc107; border-radius: 8px; }
+        .step-by-step { background: #fdfdfd; padding: 15px; border-radius: 8px; border: 1px solid #ddd; max-height: 400px; overflow-y: auto; }
+        hr { border: 0; border-top: 1px solid #eee; margin: 20px 0; }
+        
+        @media print {
+            body { background: white; color: black; padding: 0; }
+            .card { box-shadow: none; border: none; padding: 0; margin-bottom: 30px; page-break-inside: avoid; }
+            button, label, input, select, p style, .btn-pdf, h1, p { display: none !important; }
+            #risultati, #risultati .card { display: block !important; }
+            .grid-output { background: white; color: black; border: 1px solid #000; font-size: 10px; letter-spacing: 1px; }
+            .step-by-step { max-height: none; overflow: visible; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <h1>🧶 Uncinetto & Pricing Avanzato</h1>
+        <p style="font-size: 13px; color: #666;">Pannello di controllo e conversione schemi fotografici.</p>
+    </div>
+
+    <div class="card">
+        <h2>⚙️ Pannello Admin (Costi)</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div>
+                <label>Tariffa Oraria (€)</label>
+                <input type="number" id="tariffaOraria" value="15">
+            </div>
+            <div>
+                <label>Ore Lavoro</label>
+                <input type="number" id="oreLavoro" value="8">
+            </div>
+        </div>
+        <label>Margine Guadagno (Ricarico)</label>
+        <select id="ricarico">
+            <option value="1.2">Basso (+20%)</option>
+            <option value="1.5" selected>Standard (+50%)</option>
+            <option value="2.0">Alto (x2)</option>
+        </select>
+    </div>
+
+    <div class="card">
+        <h2>📸 Generazione Progetto</h2>
+        <label>Carica Foto da Galleria</label>
+        <input type="file" id="uploadFoto" accept="image/*">
+        
+        <label>Larghezza Schema (Punti/Maglie)</label>
+        <input type="number" id="larghezzaPunti" value="40">
+        
+        <button class="btn-primary" onclick="elaboraProgetto()">ELABORA SCHEMA E PREZZO</button>
+    </div>
+
+    <div id="risultati" style="display:none;">
+        <div class="card">
+            <button class="btn-pdf" onclick="window.print()">📥 SALVA TUTTO IN PDF / STAMPA</button>
+        </div>
+
+        <div class="card">
+            <h2>🖼️ Schema Visivo a Simboli</h2>
+            <div class="grid-output" id="outputSimboli"></div>
+            <h3>Legenda Colori e Codici</h3>
+            <div class="legend-grid" id="outputLegenda"></div>
+        </div>
+
+        <div class="card">
+            <h2>📜 Istruzioni Passo-Passo (Riga per Riga)</h2>
+            <div class="step-by-step" id="outputPassi"></div>
+        </div>
+
+        <div class="card">
+            <h2>💰 Analisi Economica Admin</h2>
+            <div class="report" id="outputReport"></div>
+        </div>
+    </div>
+</div>
+
+<canvas id="canvasNascosto" style="display:none;"></canvas>
+
+<script>
+const catalogoFilati = [
+    { nome: "DMC 310 (Nero)", hex: "#000000", simbolo: "X", costo: 1.90, metri: 8 },
+    { nome: "DMC B5200 (Bianco)", hex: "#FFFFFF", simbolo: ".", costo: 1.90, metri: 8 },
+    { nome: "DMC 666 (Rosso)", hex: "#E32227", simbolo: "O", costo: 1.90, metri: 8 },
+    { nome: "DMC 796 (Blu Reale)", hex: "#003278", simbolo: "#", costo: 1.90, metri: 8 },
+    { nome: "DMC 444 (Giallo)", hex: "#FFD700", simbolo: "*", costo: 1.90, metri: 8 },
+    { nome: "DMC 912 (Verde)", hex: "#1B8C5B", simbolo: "+", costo: 1.90, metri: 8 },
+    { nome: "DMC 603 (Rosa)", hex: "#FF8EB2", simbolo: "P", costo: 1.90, metri: 8 },
+    { nome: "Lane Gatto (Grigio)", hex: "#8E8E8E", simbolo: "G", costo: 4.50, metri: 125 },
+    { nome: "Adriafil (Blu Navy)", hex: "#000080", simbolo: "N", costo: 4.80, metri: 135 },
+    { nome: "Adriafil (Crema)", hex: "#FFFDD0", simbolo: "C", costo: 4.80, metri: 135 }
+];
+
+function hexToRgb(hex) {
+    let c = hex.substring(1);
+    let rgb = parseInt(c, 16);
+    return { r: (rgb >> 16) & 255, g: (rgb >> 8) & 255, b: rgb & 255 };
+}
+
+function trovaFilatoPiuVicino(r, g, b) {
+    let minDist = Infinity;
+    let scelto = catalogoFilati[0];
+    catalogoFilati.forEach(f => {
+        let c = hexToRgb(f.hex);
+        let dist = Math.sqrt(Math.pow(r-c.r,2) + Math.pow(g-c.g,2) + Math.pow(b-c.b,2));
         if (dist < minDist) { minDist = dist; scelto = f; }
     });
     return scelto;
 }
 
+function科学elaboraProgetto() { // Nota: Corretto refuso interno per sicurezza chiamata
+    const fileInput = document.getElementById('uploadFoto');
+    if (!fileInput.files[0]) { alert("Carica una foto!"); return; }
+    const reader = new FileReader();
+    reader.onload = e => {
+        const img = new Image();
+        img.onload = () => eseguiConversione(img);
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(fileInput.files[0]);
+}
+
+// Mantenuta la funzione originale mostrata nel tuo screen
 function elaboraProgetto() {
     const fileInput = document.getElementById('uploadFoto');
     if (!fileInput.files[0]) { alert("Carica una foto!"); return; }
@@ -46,7 +185,6 @@ function eseguiConversione(img) {
 function renderizza(griglia, conteggio) {
     document.getElementById('risultati').style.display = 'block';
     
-    // Griglia e Legenda
     let txt = "";
     let usati = new Set();
     griglia.forEach(r => {
@@ -64,7 +202,6 @@ function renderizza(griglia, conteggio) {
     });
     document.getElementById('outputLegenda').innerHTML = legHtml;
 
-    // Passo-Passo
     let passi = "";
     griglia.forEach((r, i) => {
         let rowP = []; let cur = r[0].nome; let c = 0;
@@ -73,19 +210,18 @@ function renderizza(griglia, conteggio) {
             else { rowP.push(`${c} ${cur}`); cur = p.nome; c = 1; }
         });
         rowP.push(`${c} ${cur}`);
-        passi += `<strong>R${i+1}:</strong> ${rowP.join(' / ')}<br>`;
+        passi += `<strong>Riga ${i+1}:</strong> ${rowP.join(' / ')}<br>`;
     });
     document.getElementById('outputPassi').innerHTML = passi;
 
-    // Report
-    let matCost = 0; let matDett = "";
     const ore = parseFloat(document.getElementById('oreLavoro').value);
     const tariffa = parseFloat(document.getElementById('tariffaOraria').value);
     const ric = parseFloat(document.getElementById('ricarico').value);
 
+    let matCost = 0; let matDett = "";
     catalogoFilati.forEach(f => {
         if(conteggio[f.nome] > 0) {
-            let m = (conteggio[f.nome] * 0.05).toFixed(1); // Stima consumo
+            let m = (conteggio[f.nome] * 0.05).toFixed(1); 
             let g = Math.ceil(m / f.metri);
             let spesa = g * f.costo;
             matCost += spesa;
@@ -93,12 +229,12 @@ function renderizza(griglia, conteggio) {
         }
     });
 
-    let total = (matCost + (ore * tariffa)) * ric;
+    let totale = (matCost + (ore * tariffa)) * ric;
     document.getElementById('outputReport').innerHTML = `
         <ul>${matDett}</ul>
-        <p>Manodopera: ${(ore*tariffa).toFixed(2)}€</p>
-        <p>Materiali: ${matCost.toFixed(2)}€</p>
-        <h3 style="color:#d35400;">PREZZO FINALE: ${total.toFixed(2)}€</h3>
+        <p>Costo Manodopera: ${(ore*tariffa).toFixed(2)}€</p>
+        <p>Costo Materiali: ${matCost.toFixed(2)}€</p>
+        <h3 style="color:#27ae60;">PREZZO DI VENDITA CONSIGLIATO: ${totale.toFixed(2)}€</h3>
     `;
 }
 </script>
