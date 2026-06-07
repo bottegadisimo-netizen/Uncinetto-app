@@ -1,95 +1,145 @@
-
 <!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>App Uncinetto Pro</title>
+    <title>Uncinetto Pro - Schema Generator</title>
     <style>
+        * { box-sizing: border-box; }
         body { font-family: -apple-system, sans-serif; margin: 0; background: #f0f2f5; color: #1c1e21; padding: 10px; }
-        .container { max-width: 900px; margin: 0 auto; }
+        .container { max-width: 1000px; margin: 0 auto; }
         .card { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; border: 1px solid #e1e4e8; }
         h1, h2, h3 { color: #2c3e50; margin-top: 0; }
-        label { display: block; margin: 12px 0 5px; font-weight: 600; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box; }
-        button { color: white; border: none; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 8px; width: 100%; cursor: pointer; transition: 0.3s; }
-        .btn-primary { background: #007bff; }
+        label { display: block; margin: 12px 0 5px; font-weight: 600; font-size: 14px; }
+        input[type="text"], input[type="number"], input[type="file"], select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px; font-size: 14px; }
+        input[type="color"] { width: 100%; height: 45px; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; }
+        button { color: white; border: none; padding: 12px 20px; font-size: 14px; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+        .btn-primary { background: #007bff; width: 100%; }
         .btn-primary:hover { background: #0056b3; }
-        .btn-pdf { background: #e74c3c; }
+        .btn-secondary { background: #6c757d; }
+        .btn-secondary:hover { background: #5a6268; }
+        .btn-danger { background: #dc3545; padding: 5px 10px; font-size: 12px; }
+        .btn-pdf { background: #e74c3c; width: 100%; }
         .btn-pdf:hover { background: #c0392b; }
-        .grid-output { font-family: monospace; white-space: pre; background: #1a1a1a; color: #00ff00; padding: 15px; border-radius: 8px; overflow-x: auto; max-height: 600px; overflow-y: auto; }
-        .legend-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; margin-top: 15px; }
-        .legend-item { display: flex; align-items: center; font-size: 13px; background: #f8f9fa; padding: 8px; border-radius: 5px; }
-        .color-box { width: 30px; height: 30px; margin-right: 8px; border: 1px solid #000; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; color: white; }
-        .badge { display: inline-block; background: #007bff; color: white; padding: 6px 12px; border-radius: 12px; font-size: 12px; }
+        
         .schema-buttons { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 15px 0; }
-        .schema-btn { padding: 12px; border: 2px solid #ddd; background: #f8f9fa; cursor: pointer; border-radius: 8px; font-weight: 600; transition: 0.3s; }
+        .schema-btn { padding: 12px; border: 2px solid #ddd; background: #f8f9fa; cursor: pointer; border-radius: 8px; font-weight: 600; transition: 0.3s; text-align: center; }
         .schema-btn:hover { border-color: #007bff; background: #e7f3ff; }
         .schema-btn.active { border-color: #007bff; background: #007bff; color: white; }
+        
+        .color-section { margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff; }
+        .color-item { display: grid; grid-template-columns: 60px 1fr 1fr 60px; gap: 10px; align-items: end; margin-bottom: 10px; }
+        .color-preview { width: 60px; height: 40px; border: 2px solid #ddd; border-radius: 5px; }
+        
+        .grid-output { font-family: monospace; white-space: pre; background: #f5f5f5; border: 2px solid #ddd; padding: 15px; border-radius: 8px; overflow-x: auto; max-height: 600px; overflow-y: auto; line-height: 1.8; font-size: 14px; }
+        .grid-croce { display: grid; gap: 1px; background: #ddd; padding: 5px; border-radius: 8px; max-height: 600px; overflow-y: auto; }
+        .grid-cell { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; border: 1px solid #999; }
+        
+        .badge { display: inline-block; background: #007bff; color: white; padding: 6px 12px; border-radius: 12px; font-size: 12px; margin-right: 8px; }
+        .legend-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-top: 15px; }
+        .legend-item { display: flex; align-items: center; font-size: 13px; background: #f8f9fa; padding: 8px; border-radius: 5px; border: 1px solid #ddd; }
+        .legend-symbol { width: 35px; height: 35px; margin-right: 8px; border: 1px solid #000; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 3px; }
+        
         .report { background: #fff3cd; padding: 20px; border-left: 6px solid #ffc107; border-radius: 8px; }
-        .step-by-step { background: #fdfdfd; padding: 15px; border-radius: 8px; border: 1px solid #ddd; max-height: 400px; overflow-y: auto; }
+        
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #ddd; }
+        .tab { padding: 10px 20px; cursor: pointer; border-bottom: 3px solid transparent; font-weight: 600; }
+        .tab.active { border-bottom-color: #007bff; color: #007bff; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        @media print {
+            .schema-buttons, button, label, input, select, .tabs, .tab { display: none !important; }
+            .grid-output { background: white; border: 1px solid #000; }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="card">
-        <h1>🧶 Uncinetto Pro</h1>
-        <p>Converti foto in schemi di uncinetto, ferri o punto croce</p>
+        <h1>🧶 Uncinetto Pro - Schema Generator</h1>
+        <p>Converti foto in schemi con simboli standard internazionali</p>
     </div>
 
-    <div class="card">
-        <h2>Admin</h2>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-            <div>
-                <label>Tariffa Oraria (€)</label>
-                <input type="number" id="tariffaOraria" value="15">
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab(this, 'genera')">📸 Genera Schema</div>
+        <div class="tab" onclick="switchTab(this, 'colori')">🎨 Gestisci Colori</div>
+    </div>
+
+    <!-- TAB: GENERA SCHEMA -->
+    <div id="genera" class="tab-content active">
+        <div class="card">
+            <h2>⚙️ Parametri</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div>
+                    <label>Tariffa Oraria (€)</label>
+                    <input type="number" id="tariffaOraria" value="15" min="1">
+                </div>
+                <div>
+                    <label>Ore Lavoro</label>
+                    <input type="number" id="oreLavoro" value="8" min="1">
+                </div>
             </div>
-            <div>
-                <label>Ore Lavoro</label>
-                <input type="number" id="oreLavoro" value="8">
+            <label>Ricarico</label>
+            <select id="ricarico">
+                <option value="1.2">Basso +20%</option>
+                <option value="1.5" selected>Standard +50%</option>
+                <option value="2.0">Alto x2</option>
+            </select>
+        </div>
+
+        <div class="card">
+            <h2>📸 Carica Foto</h2>
+            <label>Foto</label>
+            <input type="file" id="uploadFoto" accept="image/*">
+            <label>Larghezza Schema (punti)</label>
+            <input type="number" id="larghezzaPunti" value="40" min="10" max="200">
+            <label style="margin-top: 15px;">Tipo di Schema:</label>
+            <div class="schema-buttons">
+                <div class="schema-btn active" onclick="selectSchema(this, 'uncinetto')">🧶 Uncinetto</div>
+                <div class="schema-btn" onclick="selectSchema(this, 'ferri')">📌 Ferri</div>
+                <div class="schema-btn" onclick="selectSchema(this, 'puntocroce')">✕ Punto Croce</div>
             </div>
+            <button class="btn-primary" onclick="elaboraProgetto()">ELABORA SCHEMA</button>
         </div>
-        <label>Ricarico</label>
-        <select id="ricarico">
-            <option value="1.2">Basso +20%</option>
-            <option value="1.5" selected>Standard +50%</option>
-            <option value="2.0">Alto x2</option>
-        </select>
     </div>
 
-    <div class="card">
-        <h2>Genera Schema</h2>
-        <label>Carica Foto</label>
-        <input type="file" id="uploadFoto" accept="image/*">
-        <label>Larghezza (Punti)</label>
-        <input type="number" id="larghezzaPunti" value="40" min="10" max="200">
-        <label style="margin-top: 15px;">Tipo di Schema:</label>
-        <div class="schema-buttons">
-            <div class="schema-btn active" onclick="selectSchema(this, 'uncinetto')">🧶 Uncinetto</div>
-            <div class="schema-btn" onclick="selectSchema(this, 'ferri')">📌 Ferri</div>
-            <div class="schema-btn" onclick="selectSchema(this, 'puntocroce')">✕ Punto Croce</div>
+    <!-- TAB: GESTIONE COLORI -->
+    <div id="colori" class="tab-content">
+        <div class="card">
+            <h2>🎨 Colori Uncinetto</h2>
+            <div id="coloriUncinetto" class="color-section"></div>
+            <button class="btn-secondary" onclick="aggiungiColore('uncinetto')">+ Aggiungi Colore</button>
         </div>
-        <button class="btn-primary" onclick="elaboraProgetto()">ELABORA</button>
+        <div class="card">
+            <h2>🎨 Colori Ferri</h2>
+            <div id="coloriFerri" class="color-section"></div>
+            <button class="btn-secondary" onclick="aggiungiColore('ferri')">+ Aggiungi Colore</button>
+        </div>
+        <div class="card">
+            <h2>🎨 Colori Punto Croce</h2>
+            <div id="coloriPuntoCroce" class="color-section"></div>
+            <button class="btn-secondary" onclick="aggiungiColore('puntocroce')">+ Aggiungi Colore</button>
+        </div>
     </div>
 
+    <!-- RISULTATI -->
     <div id="risultati" style="display:none;">
         <div class="card">
             <button class="btn-pdf" onclick="window.print()">📥 STAMPA PDF</button>
         </div>
+
         <div class="card">
-            <h2>Schema</h2>
-            <p><span class="badge" id="typoBadge">Uncinetto</span></p>
-            <div class="grid-output" id="outputSimboli"></div>
+            <h2>🖼️ Schema</h2>
+            <p><span class="badge" id="typoBadge">Uncinetto</span> <span id="statoSchema" style="color:#666; font-size:12px;"></span></p>
+            <div id="schemaContainer"></div>
             <h3>Legenda</h3>
             <div class="legend-grid" id="outputLegenda"></div>
         </div>
+
         <div class="card">
-            <h2>Istruzioni</h2>
-            <div class="step-by-step" id="outputPassi"></div>
-        </div>
-        <div class="card">
-            <h2>Costi</h2>
+            <h2>💰 Costi</h2>
             <div class="report" id="outputReport"></div>
         </div>
     </div>
@@ -100,22 +150,55 @@
 <script>
 let selectedSchema = 'uncinetto';
 
-const filati = [
-    { nome: "DMC 310 (Nero)", hex: "#000000", cost: 1.90 },
-    { nome: "DMC B5200 (Bianco)", hex: "#FFFFFF", cost: 1.90 },
-    { nome: "DMC 666 (Rosso)", hex: "#E32227", cost: 1.90 },
-    { nome: "DMC 796 (Blu)", hex: "#003278", cost: 1.90 },
-    { nome: "DMC 444 (Giallo)", hex: "#FFD700", cost: 1.90 },
-    { nome: "DMC 912 (Verde)", hex: "#1B8C5B", cost: 1.90 },
-    { nome: "DMC 603 (Rosa)", hex: "#FF8EB2", cost: 1.90 },
-    { nome: "Lane Gatto (Grigio)", hex: "#8E8E8E", cost: 4.50 },
-    { nome: "Adriafil Navy", hex: "#000080", cost: 4.80 },
-    { nome: "Adriafil Crema", hex: "#FFFDD0", cost: 4.80 }
-];
+let colori = {
+    uncinetto: [
+        { nome: "Nero", hex: "#000000" },
+        { nome: "Bianco", hex: "#FFFFFF" },
+        { nome: "Rosso", hex: "#E32227" },
+        { nome: "Blu", hex: "#003278" },
+        { nome: "Giallo", hex: "#FFD700" },
+        { nome: "Verde", hex: "#1B8C5B" },
+        { nome: "Rosa", hex: "#FF8EB2" }
+    ],
+    ferri: [
+        { nome: "Nero", hex: "#000000" },
+        { nome: "Bianco", hex: "#FFFFFF" },
+        { nome: "Rosso", hex: "#E32227" },
+        { nome: "Blu", hex: "#003278" },
+        { nome: "Giallo", hex: "#FFD700" }
+    ],
+    puntocroce: [
+        { nome: "Nero", hex: "#000000" },
+        { nome: "Bianco", hex: "#FFFFFF" },
+        { nome: "Rosso", hex: "#E32227" },
+        { nome: "Blu", hex: "#003278" },
+        { nome: "Verde", hex: "#1B8C5B" }
+    ]
+};
 
-const symbolsUncinetto = { 0: "O", 1: "X", 2: "T", 3: "+", 4: "^" };
-const symbolsFerri = { 0: "|", 1: "-", 2: "O", 3: "/", 4: "\\" };
-const symbolsPuntoCroce = { 0: "X", 1: "/", 2: "\\", 3: "+", 4: "*" };
+const simboli = {
+    uncinetto: {
+        0: { sym: "o", desc: "Catenella" },
+        1: { sym: "x", desc: "Maglia bassa" },
+        2: { sym: "T", desc: "Maglia mezza alta" },
+        3: { sym: "|", desc: "Maglia alta" },
+        4: { sym: "||", desc: "Maglia altissima" }
+    },
+    ferri: {
+        0: { sym: "□", desc: "Diritto" },
+        1: { sym: "•", desc: "Rovescio" },
+        2: { sym: "O", desc: "Gettato" },
+        3: { sym: "/", desc: "Dim. destra" },
+        4: { sym: "\\", desc: "Dim. sinistra" }
+    }
+};
+
+function switchTab(tab, id) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(id).classList.add('active');
+}
 
 function selectSchema(el, type) {
     selectedSchema = type;
@@ -123,9 +206,52 @@ function selectSchema(el, type) {
     el.classList.add('active');
 }
 
+function aggiungiColore(tipo) {
+    colori[tipo].push({ nome: "Nuovo Colore", hex: "#000000" });
+    renderColori();
+}
+
+function rimuoviColore(tipo, idx) {
+    colori[tipo].splice(idx, 1);
+    renderColori();
+}
+
+function updateColore(tipo, idx, field, value) {
+    colori[tipo][idx][field] = value;
+}
+
+function renderColori() {
+    ['uncinetto', 'ferri', 'puntocroce'].forEach(tipo => {
+        const container = document.getElementById(`colori${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`);
+        container.innerHTML = colori[tipo].map((c, i) => `
+            <div class="color-item">
+                <input type="color" value="${c.hex}" onchange="updateColore('${tipo}', ${i}, 'hex', this.value); renderColori();">
+                <input type="text" value="${c.nome}" onchange="updateColore('${tipo}', ${i}, 'nome', this.value);" placeholder="Nome colore">
+                <span style="font-size: 12px; color: #666;">${c.hex}</span>
+                <button class="btn-danger" onclick="rimuoviColore('${tipo}', ${i}); renderColori();">✕</button>
+            </div>
+        `).join('');
+    });
+}
+
+function hexToRgb(hex) {
+    const c = parseInt(hex.substring(1), 16);
+    return [(c >> 16) & 255, (c >> 8) & 255, c & 255];
+}
+
+function trovaColoreVicino(r, g, b) {
+    let min = Infinity, closest = colori[selectedSchema][0];
+    colori[selectedSchema].forEach(c => {
+        const [cr, cg, cb] = hexToRgb(c.hex);
+        const dist = Math.hypot(r - cr, g - cg, b - cb);
+        if (dist < min) { min = dist; closest = c; }
+    });
+    return closest;
+}
+
 function elaboraProgetto() {
     const input = document.getElementById('uploadFoto');
-    if (!input.files[0]) { alert("Carica foto"); return; }
+    if (!input.files[0]) { alert("Carica una foto!"); return; }
     const reader = new FileReader();
     reader.onload = e => {
         const img = new Image();
@@ -152,86 +278,106 @@ function processImage(img) {
         for (let x = 0; x < width; x++) {
             const idx = (y * width + x) * 4;
             const r = data[idx], g = data[idx+1], b = data[idx+2];
-            const closest = findClosestColor(r, g, b);
-            row.push(closest);
+            const colore = trovaColoreVicino(r, g, b);
+            row.push(colore);
         }
         grid.push(row);
     }
     renderSchema(grid);
 }
 
-function findClosestColor(r, g, b) {
-    let minDist = Infinity, closest = filati[0];
-    filati.forEach(f => {
-        const [fr, fg, fb] = hexToRgb(f.hex);
-        const dist = Math.hypot(r - fr, g - fg, b - fb);
-        if (dist < minDist) { minDist = dist; closest = f; }
-    });
-    return closest;
-}
-
-function hexToRgb(hex) {
-    const c = parseInt(hex.substring(1), 16);
-    return [(c >> 16) & 255, (c >> 8) & 255, c & 255];
-}
-
-function getSymbol(index) {
-    const map = { uncinetto: symbolsUncinetto, ferri: symbolsFerri, puntocroce: symbolsPuntoCroce };
-    return map[selectedSchema][index % 5] || "?";
-}
-
 function renderSchema(grid) {
     document.getElementById('risultati').style.display = 'block';
+    const tipoNomi = { uncinetto: '🧶 Uncinetto', ferri: '📌 Ferri', puntocroce: '✕ Punto Croce' };
+    document.getElementById('typoBadge').textContent = tipoNomi[selectedSchema];
+    document.getElementById('statoSchema').innerHTML = `${grid.length} righe × ${grid[0].length} colonne`;
     
-    let output = "";
     let used = new Set();
+    grid.forEach(r => r.forEach(c => used.add(c.nome)));
+    
+    if (selectedSchema === 'puntocroce') {
+        renderGridPuntoCroce(grid, used);
+    } else {
+        renderGridSimboli(grid, used);
+    }
+    
+    renderCosti();
+}
+
+function renderGridSimboli(grid, used) {
+    let output = "";
     grid.forEach(row => {
-        row.forEach(f => {
-            const idx = filati.indexOf(f);
-            output += getSymbol(idx);
-            used.add(f.nome);
+        row.forEach(c => {
+            const idx = colori[selectedSchema].indexOf(c);
+            const sym = simboli[selectedSchema][idx % 5].sym;
+            output += sym + " ";
         });
         output += "\n";
     });
-    document.getElementById('outputSimboli').innerText = output;
+    document.getElementById('schemaContainer').innerHTML = `<div class="grid-output">${output}</div>`;
     
-    document.getElementById('typoBadge').textContent = selectedSchema.charAt(0).toUpperCase() + selectedSchema.slice(1);
-    
-    let legend = "";
+    let legenda = "";
     used.forEach(nome => {
-        const f = filati.find(x => x.nome === nome);
-        const idx = filati.indexOf(f);
-        legend += `<div class="legend-item"><div class="color-box" style="background:${f.hex}">${getSymbol(idx)}</div><span>${nome}</span></div>`;
+        const c = colori[selectedSchema].find(x => x.nome === nome);
+        const idx = colori[selectedSchema].indexOf(c);
+        const sym = simboli[selectedSchema][idx % 5];
+        legenda += `<div class="legend-item">
+            <div class="legend-symbol" style="background: ${c.hex}; color: ${getContrastColor(c.hex)}">${sym.sym}</div>
+            <div><strong>${c.nome}</strong><br><small>${sym.desc}</small></div>
+        </div>`;
     });
-    document.getElementById('outputLegenda').innerHTML = legend;
+    document.getElementById('outputLegenda').innerHTML = legenda;
+}
+
+function renderGridPuntoCroce(grid, used) {
+    const cellSize = 30;
+    const maxWidth = 800;
+    const cols = Math.min(grid[0].length, Math.floor(maxWidth / cellSize));
+    let html = `<div class="grid-croce" style="grid-template-columns: repeat(${cols}, ${cellSize}px);">`;
     
-    let steps = "";
-    grid.forEach((row, i) => {
-        let desc = "";
-        let last = null, count = 0;
-        row.forEach(f => {
-            if (f === last) count++;
-            else { if (last) desc += count + "x " + last.nome + " → "; last = f; count = 1; }
+    grid.forEach(row => {
+        row.slice(0, Math.floor(maxWidth / cellSize)).forEach(c => {
+            html += `<div class="grid-cell" style="background: ${c.hex}; color: ${getContrastColor(c.hex)}; font-size: 20px;">✕</div>`;
         });
-        if (last) desc += count + "x " + last.nome;
-        steps += `<strong>Riga ${i+1}:</strong> ${desc}<br>`;
     });
-    document.getElementById('outputPassi').innerHTML = steps;
+    html += '</div>';
+    document.getElementById('schemaContainer').innerHTML = html;
     
-    const hours = parseFloat(document.getElementById('oreLavoro').value) || 8;
-    const rate = parseFloat(document.getElementById('tariffaOraria').value) || 15;
-    const markup = parseFloat(document.getElementById('ricarico').value) || 1.5;
+    let legenda = "";
+    used.forEach(nome => {
+        const c = colori[selectedSchema].find(x => x.nome === nome);
+        legenda += `<div class="legend-item">
+            <div class="legend-symbol" style="background: ${c.hex}; color: ${getContrastColor(c.hex)}">✕</div>
+            <div>${c.nome}</div>
+        </div>`;
+    });
+    document.getElementById('outputLegenda').innerHTML = legenda;
+}
+
+function getContrastColor(hex) {
+    const [r, g, b] = hexToRgb(hex);
+    return (r * 299 + g * 587 + b * 114) / 1000 > 128 ? '#000' : '#fff';
+}
+
+function renderCosti() {
+    const ore = parseFloat(document.getElementById('oreLavoro').value) || 8;
+    const tariffa = parseFloat(document.getElementById('tariffaOraria').value) || 15;
+    const ric = parseFloat(document.getElementById('ricarico').value) || 1.5;
     
-    const labor = hours * rate;
-    const material = 2.5;
-    const total = (labor + material) * markup;
+    const manodopera = ore * tariffa;
+    const materiali = 5;
+    const totale = (manodopera + materiali) * ric;
     
     document.getElementById('outputReport').innerHTML = `
-        <p><strong>Manodopera:</strong> ${labor.toFixed(2)}€</p>
-        <p><strong>Materiali:</strong> ${material.toFixed(2)}€</p>
-        <h3 style="color:#27ae60;">PREZZO: ${total.toFixed(2)}€</h3>
+        <p><strong>Manodopera:</strong> ${ore} ore × ${tariffa}€ = ${manodopera.toFixed(2)}€</p>
+        <p><strong>Materiali:</strong> ${materiali.toFixed(2)}€</p>
+        <p><strong>Subtotale:</strong> ${(manodopera + materiali).toFixed(2)}€</p>
+        <p><strong>Ricarico:</strong> ${((ric - 1) * 100).toFixed(0)}%</p>
+        <h3 style="color:#27ae60; border-top: 2px solid #27ae60; padding-top: 10px; margin-top: 15px;">PREZZO: ${totale.toFixed(2)}€</h3>
     `;
 }
+
+renderColori();
 </script>
 </body>
 </html>
