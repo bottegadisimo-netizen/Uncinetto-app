@@ -1,49 +1,45 @@
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>App Uncinetto Pro - DMC & PDF</title>
+    <title>App Uncinetto Pro</title>
     <style>
-        body { font-family: -apple-system, sans-serif; margin: 0; background: #f0f2f5; color: #1c1e21; line-height: 1.5; padding: 10px; }
+        body { font-family: -apple-system, sans-serif; margin: 0; background: #f0f2f5; color: #1c1e21; padding: 10px; }
         .container { max-width: 900px; margin: 0 auto; }
         .card { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; border: 1px solid #e1e4e8; }
         h1, h2, h3 { color: #2c3e50; margin-top: 0; }
-        label { display: block; margin: 12px 0 5px; font-weight: 600; font-size: 14px; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; margin-bottom: 10px; box-sizing: border-box; }
-        button { color: white; border: none; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 8px; width: 100%; cursor: pointer; transition: 0.3s; margin-bottom: 10px; }
+        label { display: block; margin: 12px 0 5px; font-weight: 600; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box; }
+        button { color: white; border: none; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 8px; width: 100%; cursor: pointer; transition: 0.3s; }
         .btn-primary { background: #007bff; }
         .btn-primary:hover { background: #0056b3; }
         .btn-pdf { background: #e74c3c; }
         .btn-pdf:hover { background: #c0392b; }
-        .grid-output { font-family: "Courier New", monospace; white-space: pre; background: #1a1a1a; color: #00ff00; padding: 15px; border-radius: 8px; overflow-x: auto; font-size: 11px; letter-spacing: 2px; line-height: 1.1; border: 4px solid #333; }
-        .legend-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 15px; }
-        .legend-item { display: flex; align-items: center; font-size: 13px; background: #f8f9fa; padding: 5px; border-radius: 5px; border: 1px solid #eee; }
-        .color-box { width: 20px; height: 20px; margin-right: 8px; border-radius: 3px; border: 1px solid #000; text-align: center; font-weight: bold; line-height: 20px; color: #fff; text-shadow: 1px 1px 1px #000; }
+        .grid-output { font-family: monospace; white-space: pre; background: #1a1a1a; color: #00ff00; padding: 15px; border-radius: 8px; overflow-x: auto; max-height: 600px; overflow-y: auto; }
+        .legend-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; margin-top: 15px; }
+        .legend-item { display: flex; align-items: center; font-size: 13px; background: #f8f9fa; padding: 8px; border-radius: 5px; }
+        .color-box { width: 30px; height: 30px; margin-right: 8px; border: 1px solid #000; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; color: white; }
+        .badge { display: inline-block; background: #007bff; color: white; padding: 6px 12px; border-radius: 12px; font-size: 12px; }
+        .schema-buttons { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 15px 0; }
+        .schema-btn { padding: 12px; border: 2px solid #ddd; background: #f8f9fa; cursor: pointer; border-radius: 8px; font-weight: 600; transition: 0.3s; }
+        .schema-btn:hover { border-color: #007bff; background: #e7f3ff; }
+        .schema-btn.active { border-color: #007bff; background: #007bff; color: white; }
         .report { background: #fff3cd; padding: 20px; border-left: 6px solid #ffc107; border-radius: 8px; }
         .step-by-step { background: #fdfdfd; padding: 15px; border-radius: 8px; border: 1px solid #ddd; max-height: 400px; overflow-y: auto; }
-        hr { border: 0; border-top: 1px solid #eee; margin: 20px 0; }
-        
-        @media print {
-            body { background: white; color: black; padding: 0; }
-            .card { box-shadow: none; border: none; padding: 0; margin-bottom: 30px; page-break-inside: avoid; }
-            button, label, input, select, p style, .btn-pdf, h1, p { display: none !important; }
-            #risultati, #risultati .card { display: block !important; }
-            .grid-output { background: white; color: black; border: 1px solid #000; font-size: 10px; letter-spacing: 1px; }
-            .step-by-step { max-height: none; overflow: visible; }
-        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="card">
-        <h1>🧶 Uncinetto & Pricing Avanzato</h1>
-        <p style="font-size: 13px; color: #666;">Pannello di controllo e conversione schemi fotografici.</p>
+        <h1>🧶 Uncinetto Pro</h1>
+        <p>Converti foto in schemi di uncinetto, ferri o punto croce</p>
     </div>
 
     <div class="card">
-        <h2>⚙️ Pannello Admin (Costi)</h2>
+        <h2>Admin</h2>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
             <div>
                 <label>Tariffa Oraria (€)</label>
@@ -54,44 +50,46 @@
                 <input type="number" id="oreLavoro" value="8">
             </div>
         </div>
-        <label>Margine Guadagno (Ricarico)</label>
+        <label>Ricarico</label>
         <select id="ricarico">
-            <option value="1.2">Basso (+20%)</option>
-            <option value="1.5" selected>Standard (+50%)</option>
-            <option value="2.0">Alto (x2)</option>
+            <option value="1.2">Basso +20%</option>
+            <option value="1.5" selected>Standard +50%</option>
+            <option value="2.0">Alto x2</option>
         </select>
     </div>
 
     <div class="card">
-        <h2>📸 Generazione Progetto</h2>
-        <label>Carica Foto da Galleria</label>
+        <h2>Genera Schema</h2>
+        <label>Carica Foto</label>
         <input type="file" id="uploadFoto" accept="image/*">
-        
-        <label>Larghezza Schema (Punti/Maglie)</label>
-        <input type="number" id="larghezzaPunti" value="40">
-        
-        <button class="btn-primary" onclick="elaboraProgetto()">ELABORA SCHEMA E PREZZO</button>
+        <label>Larghezza (Punti)</label>
+        <input type="number" id="larghezzaPunti" value="40" min="10" max="200">
+        <label style="margin-top: 15px;">Tipo di Schema:</label>
+        <div class="schema-buttons">
+            <div class="schema-btn active" onclick="selectSchema(this, 'uncinetto')">🧶 Uncinetto</div>
+            <div class="schema-btn" onclick="selectSchema(this, 'ferri')">📌 Ferri</div>
+            <div class="schema-btn" onclick="selectSchema(this, 'puntocroce')">✕ Punto Croce</div>
+        </div>
+        <button class="btn-primary" onclick="elaboraProgetto()">ELABORA</button>
     </div>
 
     <div id="risultati" style="display:none;">
         <div class="card">
-            <button class="btn-pdf" onclick="window.print()">📥 SALVA TUTTO IN PDF / STAMPA</button>
+            <button class="btn-pdf" onclick="window.print()">📥 STAMPA PDF</button>
         </div>
-
         <div class="card">
-            <h2>🖼️ Schema Visivo a Simboli</h2>
+            <h2>Schema</h2>
+            <p><span class="badge" id="typoBadge">Uncinetto</span></p>
             <div class="grid-output" id="outputSimboli"></div>
-            <h3>Legenda Colori e Codici</h3>
+            <h3>Legenda</h3>
             <div class="legend-grid" id="outputLegenda"></div>
         </div>
-
         <div class="card">
-            <h2>📜 Istruzioni Passo-Passo (Riga per Riga)</h2>
+            <h2>Istruzioni</h2>
             <div class="step-by-step" id="outputPassi"></div>
         </div>
-
         <div class="card">
-            <h2>💰 Analisi Economica Admin</h2>
+            <h2>Costi</h2>
             <div class="report" id="outputReport"></div>
         </div>
     </div>
@@ -100,141 +98,138 @@
 <canvas id="canvasNascosto" style="display:none;"></canvas>
 
 <script>
-const catalogoFilati = [
-    { nome: "DMC 310 (Nero)", hex: "#000000", simbolo: "X", costo: 1.90, metri: 8 },
-    { nome: "DMC B5200 (Bianco)", hex: "#FFFFFF", simbolo: ".", costo: 1.90, metri: 8 },
-    { nome: "DMC 666 (Rosso)", hex: "#E32227", simbolo: "O", costo: 1.90, metri: 8 },
-    { nome: "DMC 796 (Blu Reale)", hex: "#003278", simbolo: "#", costo: 1.90, metri: 8 },
-    { nome: "DMC 444 (Giallo)", hex: "#FFD700", simbolo: "*", costo: 1.90, metri: 8 },
-    { nome: "DMC 912 (Verde)", hex: "#1B8C5B", simbolo: "+", costo: 1.90, metri: 8 },
-    { nome: "DMC 603 (Rosa)", hex: "#FF8EB2", simbolo: "P", costo: 1.90, metri: 8 },
-    { nome: "Lane Gatto (Grigio)", hex: "#8E8E8E", simbolo: "G", costo: 4.50, metri: 125 },
-    { nome: "Adriafil (Blu Navy)", hex: "#000080", simbolo: "N", costo: 4.80, metri: 135 },
-    { nome: "Adriafil (Crema)", hex: "#FFFDD0", simbolo: "C", costo: 4.80, metri: 135 }
+let selectedSchema = 'uncinetto';
+
+const filati = [
+    { nome: "DMC 310 (Nero)", hex: "#000000", cost: 1.90 },
+    { nome: "DMC B5200 (Bianco)", hex: "#FFFFFF", cost: 1.90 },
+    { nome: "DMC 666 (Rosso)", hex: "#E32227", cost: 1.90 },
+    { nome: "DMC 796 (Blu)", hex: "#003278", cost: 1.90 },
+    { nome: "DMC 444 (Giallo)", hex: "#FFD700", cost: 1.90 },
+    { nome: "DMC 912 (Verde)", hex: "#1B8C5B", cost: 1.90 },
+    { nome: "DMC 603 (Rosa)", hex: "#FF8EB2", cost: 1.90 },
+    { nome: "Lane Gatto (Grigio)", hex: "#8E8E8E", cost: 4.50 },
+    { nome: "Adriafil Navy", hex: "#000080", cost: 4.80 },
+    { nome: "Adriafil Crema", hex: "#FFFDD0", cost: 4.80 }
 ];
 
-function hexToRgb(hex) {
-    let c = hex.substring(1);
-    let rgb = parseInt(c, 16);
-    return { r: (rgb >> 16) & 255, g: (rgb >> 8) & 255, b: rgb & 255 };
+const symbolsUncinetto = { 0: "O", 1: "X", 2: "T", 3: "+", 4: "^" };
+const symbolsFerri = { 0: "|", 1: "-", 2: "O", 3: "/", 4: "\\" };
+const symbolsPuntoCroce = { 0: "X", 1: "/", 2: "\\", 3: "+", 4: "*" };
+
+function selectSchema(el, type) {
+    selectedSchema = type;
+    document.querySelectorAll('.schema-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
 }
 
-function trovaFilatoPiuVicino(r, g, b) {
-    let minDist = Infinity;
-    let scelto = catalogoFilati[0];
-    catalogoFilati.forEach(f => {
-        let c = hexToRgb(f.hex);
-        let dist = Math.sqrt(Math.pow(r-c.r,2) + Math.pow(g-c.g,2) + Math.pow(b-c.b,2));
-        if (dist < minDist) { minDist = dist; scelto = f; }
-    });
-    return scelto;
-}
-
-function科学elaboraProgetto() { // Nota: Corretto refuso interno per sicurezza chiamata
-    const fileInput = document.getElementById('uploadFoto');
-    if (!fileInput.files[0]) { alert("Carica una foto!"); return; }
-    const reader = new FileReader();
-    reader.onload = e => {
-        const img = new Image();
-        img.onload = () => eseguiConversione(img);
-        img.src = e.target.result;
-    };
-    reader.readAsDataURL(fileInput.files[0]);
-}
-
-// Mantenuta la funzione originale mostrata nel tuo screen
 function elaboraProgetto() {
-    const fileInput = document.getElementById('uploadFoto');
-    if (!fileInput.files[0]) { alert("Carica una foto!"); return; }
+    const input = document.getElementById('uploadFoto');
+    if (!input.files[0]) { alert("Carica foto"); return; }
     const reader = new FileReader();
     reader.onload = e => {
         const img = new Image();
-        img.onload = () => eseguiConversione(img);
+        img.onload = () => processImage(img);
         img.src = e.target.result;
     };
-    reader.readAsDataURL(fileInput.files[0]);
+    reader.readAsDataURL(input.files[0]);
 }
 
-function eseguiConversione(img) {
-    const lPunti = parseInt(document.getElementById('larghezzaPunti').value);
+function processImage(img) {
+    const width = parseInt(document.getElementById('larghezzaPunti').value);
     const canvas = document.getElementById('canvasNascosto');
     const ctx = canvas.getContext('2d');
-    const scala = lPunti / img.width;
-    const aPunti = Math.round(img.height * scala);
-    canvas.width = lPunti; canvas.height = aPunti;
-    ctx.drawImage(img, 0, 0, lPunti, aPunti);
-    const data = ctx.getImageData(0, 0, lPunti, aPunti).data;
+    const scale = width / img.width;
+    const height = Math.round(img.height * scale);
+    canvas.width = width;
+    canvas.height = height;
+    ctx.drawImage(img, 0, 0, width, height);
+    const data = ctx.getImageData(0, 0, width, height).data;
     
-    let griglia = [];
-    let conteggio = {};
-    catalogoFilati.forEach(f => conteggio[f.nome] = 0);
-
-    for (let y = 0; y < aPunti; y++) {
-        let riga = [];
-        for (let x = 0; x < lPunti; x++) {
-            let i = (y * lPunti + x) * 4;
-            let f = trovaFilatoPiuVicino(data[i], data[i+1], data[i+2]);
-            riga.push(f);
-            conteggio[f.nome]++;
+    let grid = [];
+    for (let y = 0; y < height; y++) {
+        let row = [];
+        for (let x = 0; x < width; x++) {
+            const idx = (y * width + x) * 4;
+            const r = data[idx], g = data[idx+1], b = data[idx+2];
+            const closest = findClosestColor(r, g, b);
+            row.push(closest);
         }
-        griglia.push(riga);
+        grid.push(row);
     }
-    renderizza(griglia, conteggio);
+    renderSchema(grid);
 }
 
-function renderizza(griglia, conteggio) {
+function findClosestColor(r, g, b) {
+    let minDist = Infinity, closest = filati[0];
+    filati.forEach(f => {
+        const [fr, fg, fb] = hexToRgb(f.hex);
+        const dist = Math.hypot(r - fr, g - fg, b - fb);
+        if (dist < minDist) { minDist = dist; closest = f; }
+    });
+    return closest;
+}
+
+function hexToRgb(hex) {
+    const c = parseInt(hex.substring(1), 16);
+    return [(c >> 16) & 255, (c >> 8) & 255, c & 255];
+}
+
+function getSymbol(index) {
+    const map = { uncinetto: symbolsUncinetto, ferri: symbolsFerri, puntocroce: symbolsPuntoCroce };
+    return map[selectedSchema][index % 5] || "?";
+}
+
+function renderSchema(grid) {
     document.getElementById('risultati').style.display = 'block';
     
-    let txt = "";
-    let usati = new Set();
-    griglia.forEach(r => {
-        r.forEach(p => { txt += p.simbolo; usati.add(p); });
-        txt += "\n";
-    });
-    document.getElementById('outputSimboli').innerText = txt;
-
-    let legHtml = "";
-    usati.forEach(f => {
-        legHtml += `<div class="legend-item">
-            <div class="color-box" style="background:${f.hex}">${f.simbolo}</div>
-            <span>${f.nome}</span>
-        </div>`;
-    });
-    document.getElementById('outputLegenda').innerHTML = legHtml;
-
-    let passi = "";
-    griglia.forEach((r, i) => {
-        let rowP = []; let cur = r[0].nome; let c = 0;
-        r.forEach(p => { 
-            if(p.nome === cur) c++; 
-            else { rowP.push(`${c} ${cur}`); cur = p.nome; c = 1; }
+    let output = "";
+    let used = new Set();
+    grid.forEach(row => {
+        row.forEach(f => {
+            const idx = filati.indexOf(f);
+            output += getSymbol(idx);
+            used.add(f.nome);
         });
-        rowP.push(`${c} ${cur}`);
-        passi += `<strong>Riga ${i+1}:</strong> ${rowP.join(' / ')}<br>`;
+        output += "\n";
     });
-    document.getElementById('outputPassi').innerHTML = passi;
-
-    const ore = parseFloat(document.getElementById('oreLavoro').value);
-    const tariffa = parseFloat(document.getElementById('tariffaOraria').value);
-    const ric = parseFloat(document.getElementById('ricarico').value);
-
-    let matCost = 0; let matDett = "";
-    catalogoFilati.forEach(f => {
-        if(conteggio[f.nome] > 0) {
-            let m = (conteggio[f.nome] * 0.05).toFixed(1); 
-            let g = Math.ceil(m / f.metri);
-            let spesa = g * f.costo;
-            matCost += spesa;
-            matDett += `<li>${f.nome}: ${conteggio[f.nome]} punti -> ${g} unità (${spesa.toFixed(2)}€)</li>`;
-        }
+    document.getElementById('outputSimboli').innerText = output;
+    
+    document.getElementById('typoBadge').textContent = selectedSchema.charAt(0).toUpperCase() + selectedSchema.slice(1);
+    
+    let legend = "";
+    used.forEach(nome => {
+        const f = filati.find(x => x.nome === nome);
+        const idx = filati.indexOf(f);
+        legend += `<div class="legend-item"><div class="color-box" style="background:${f.hex}">${getSymbol(idx)}</div><span>${nome}</span></div>`;
     });
-
-    let totale = (matCost + (ore * tariffa)) * ric;
+    document.getElementById('outputLegenda').innerHTML = legend;
+    
+    let steps = "";
+    grid.forEach((row, i) => {
+        let desc = "";
+        let last = null, count = 0;
+        row.forEach(f => {
+            if (f === last) count++;
+            else { if (last) desc += count + "x " + last.nome + " → "; last = f; count = 1; }
+        });
+        if (last) desc += count + "x " + last.nome;
+        steps += `<strong>Riga ${i+1}:</strong> ${desc}<br>`;
+    });
+    document.getElementById('outputPassi').innerHTML = steps;
+    
+    const hours = parseFloat(document.getElementById('oreLavoro').value) || 8;
+    const rate = parseFloat(document.getElementById('tariffaOraria').value) || 15;
+    const markup = parseFloat(document.getElementById('ricarico').value) || 1.5;
+    
+    const labor = hours * rate;
+    const material = 2.5;
+    const total = (labor + material) * markup;
+    
     document.getElementById('outputReport').innerHTML = `
-        <ul>${matDett}</ul>
-        <p>Costo Manodopera: ${(ore*tariffa).toFixed(2)}€</p>
-        <p>Costo Materiali: ${matCost.toFixed(2)}€</p>
-        <h3 style="color:#27ae60;">PREZZO DI VENDITA CONSIGLIATO: ${totale.toFixed(2)}€</h3>
+        <p><strong>Manodopera:</strong> ${labor.toFixed(2)}€</p>
+        <p><strong>Materiali:</strong> ${material.toFixed(2)}€</p>
+        <h3 style="color:#27ae60;">PREZZO: ${total.toFixed(2)}€</h3>
     `;
 }
 </script>
