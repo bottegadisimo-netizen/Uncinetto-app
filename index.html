@@ -43,7 +43,11 @@
         .badge { display: inline-block; background: #007bff; color: white; padding: 6px 12px; border-radius: 12px; font-size: 12px; margin-right: 8px; }
         .legend-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 15px; }
         .legend-item { display: flex; flex-direction: column; align-items: center; font-size: 12px; background: #f8f9fa; padding: 10px; border-radius: 5px; border: 1px solid #ddd; text-align: center; }
-        .legend-preview { width: 80px; height: 80px; border: 1px solid #ccc; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-bottom: 5px; }
+        .legend-preview { width: 80px; height: 80px; border: 1px solid #ccc; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-bottom: 5px; font-size: 32px; }
+        
+        .step-by-step { background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #007bff; max-height: 400px; overflow-y: auto; margin-bottom: 20px; }
+        .step-riga { margin-bottom: 15px; padding: 10px; background: white; border-radius: 5px; border-left: 3px solid #007bff; }
+        .step-riga strong { color: #2c3e50; }
         
         .report { background: #fff3cd; padding: 20px; border-left: 6px solid #ffc107; border-radius: 8px; }
         
@@ -64,7 +68,7 @@
 <div class="container">
     <div class="card">
         <h1>🧶 Uncinetto Pro - Schema Generator</h1>
-        <p>Genera schemi con maglie disegnate realistiche</p>
+        <p>Genera schemi con simboli standard internazionali</p>
     </div>
 
     <div class="tabs">
@@ -148,8 +152,13 @@
             <h2>🖼️ Schema</h2>
             <p><span class="badge" id="typoBadge">Uncinetto</span> <span id="statoSchema" style="color:#666; font-size:12px;"></span></p>
             <div id="schemaContainer"></div>
-            <h3>Legenda</h3>
+            <h3>Legenda Simboli</h3>
             <div class="legend-grid" id="outputLegenda"></div>
+        </div>
+
+        <div class="card">
+            <h2>📜 Istruzioni Passo-Passo (Riga per Riga)</h2>
+            <div class="step-by-step" id="outputPassi"></div>
         </div>
 
         <div class="card">
@@ -191,13 +200,29 @@ let colori = {
     ]
 };
 
-const simboliUncinetto = ["o", "●", "x", "T", "|", "‖", "V", "◆"];
-const simboliFerri = ["|", "•", "O", "/", "\\", "△", "▽", "⟲", "⟳"];
+// Simboli standard Craft Yarn Council
+const puntiUncinetto = [
+    { simbolo: "●", desc: "Catenella" },
+    { simbolo: "×", desc: "Maglia bassa" },
+    { simbolo: "T", desc: "Maglia mezza alta" },
+    { simbolo: "†", desc: "Maglia alta" },
+    { simbolo: "‡", desc: "Maglia altissima" },
+    { simbolo: "○", desc: "Maglia bassissima" },
+    { simbolo: "V", desc: "Aumento" },
+    { simbolo: "Λ", desc: "Diminuzione" }
+];
 
-const descrizioni = {
-    uncinetto: ["Catenella", "Maglia bassissima", "Maglia bassa", "Maglia mezza alta", "Maglia alta", "Maglia altissima", "Maglie chiuse insieme", "Punto nocciolina"],
-    ferri: ["Maglia diritto", "Maglia rovescio", "Gettato", "2 insieme destra", "2 insieme sinistra", "Aumento", "Diminuzione", "Incrocio destra", "Incrocio sinistra"]
-};
+const puntiFerri = [
+    { simbolo: "|", desc: "Diritto" },
+    { simbolo: "•", desc: "Rovescio" },
+    { simbolo: "○", desc: "Gettato" },
+    { simbolo: "/", desc: "2 insieme destra" },
+    { simbolo: "\\", desc: "2 insieme sinistra" },
+    { simbolo: "▲", desc: "Aumento" },
+    { simbolo: "▼", desc: "Diminuzione" },
+    { simbolo: "⟲", desc: "Incrocio destra" },
+    { simbolo: "⟳", desc: "Incrocio sinistra" }
+];
 
 function switchTab(tab, id) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -314,6 +339,7 @@ function renderSchema(grid) {
     }
     
     renderLegenda(used);
+    renderPassiPasso(grid);
     renderCosti();
 }
 
@@ -325,9 +351,9 @@ function renderGridMaglie(grid) {
     grid.forEach((row, y) => {
         row.forEach((colore, x) => {
             const colorIdx = colori[selectedSchema].indexOf(colore);
-            const puntIdx = colorIdx % (selectedSchema === 'uncinetto' ? 8 : 9);
-            const simboli = selectedSchema === 'uncinetto' ? simboliUncinetto : simboliFerri;
-            const simbolo = simboli[puntIdx];
+            const punti = selectedSchema === 'uncinetto' ? puntiUncinetto : puntiFerri;
+            const puntIdx = colorIdx % punti.length;
+            const simbolo = punti[puntIdx].simbolo;
             
             html += `<div class="schema-cell" style="width: ${size}px; height: ${size}px; background: ${colore.hex}; color: ${getContrastColor(colore.hex)}; font-size: ${size * 0.5}px;" title="${colore.nome}">
                 ${simbolo}
@@ -355,25 +381,62 @@ function renderGridPuntoCroce(grid) {
 }
 
 function renderLegenda(used) {
-    const simboli = selectedSchema === 'uncinetto' ? simboliUncinetto : simboliFerri;
-    const desc = descrizioni[selectedSchema];
+    const punti = selectedSchema === 'uncinetto' ? puntiUncinetto : puntiFerri;
     let html = '';
     
     used.forEach(nome => {
         const colore = colori[selectedSchema].find(c => c.nome === nome);
         const colorIdx = colori[selectedSchema].indexOf(colore);
-        const puntIdx = colorIdx % simboli.length;
+        const puntIdx = colorIdx % punti.length;
+        const punto = punti[puntIdx];
         
         html += `<div class="legend-item">
-            <div class="legend-preview" style="background: ${colore.hex}; color: ${getContrastColor(colore.hex)}; font-size: 24px;">
-                ${simboli[puntIdx]}
+            <div class="legend-preview" style="background: ${colore.hex}; color: ${getContrastColor(colore.hex)};">
+                ${punto.simbolo}
             </div>
             <strong>${colore.nome}</strong><br>
-            <small>${desc[puntIdx]}</small>
+            <small>${punto.desc}</small>
         </div>`;
     });
     
     document.getElementById('outputLegenda').innerHTML = html;
+}
+
+function renderPassiPasso(grid) {
+    const punti = selectedSchema === 'uncinetto' ? puntiUncinetto : puntiFerri;
+    let html = '';
+    
+    grid.forEach((row, i) => {
+        let descrizione = [];
+        let coloreAttuale = null;
+        let conteggio = 0;
+        
+        row.forEach((colore, x) => {
+            if (colore.nome === coloreAttuale) {
+                conteggio++;
+            } else {
+                if (coloreAttuale !== null) {
+                    const colorIdx = colori[selectedSchema].indexOf(colori[selectedSchema].find(c => c.nome === coloreAttuale));
+                    const puntIdx = colorIdx % punti.length;
+                    const punto = punti[puntIdx];
+                    descrizione.push(`${conteggio}× <strong>${coloreAttuale}</strong> (${punto.desc})`);
+                }
+                coloreAttuale = colore.nome;
+                conteggio = 1;
+            }
+        });
+        
+        if (coloreAttuale !== null) {
+            const colorIdx = colori[selectedSchema].indexOf(colori[selectedSchema].find(c => c.nome === coloreAttuale));
+            const puntIdx = colorIdx % punti.length;
+            const punto = punti[puntIdx];
+            descrizione.push(`${conteggio}× <strong>${coloreAttuale}</strong> (${punto.desc})`);
+        }
+        
+        html += `<div class="step-riga"><strong>Riga ${i + 1}:</strong> ${descrizione.join(' → ')}</div>`;
+    });
+    
+    document.getElementById('outputPassi').innerHTML = html;
 }
 
 function getContrastColor(hex) {
@@ -416,7 +479,23 @@ async function scaricaPDF() {
         const imgWidth = pageWidth - 20;
         const imgHeight = (canvas.height * imgWidth) / canvas.width;
         
-        pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+        let yPosition = 10;
+        let remainingHeight = imgHeight;
+        let imgPosition = 0;
+        
+        while (remainingHeight > 0) {
+            const pageHeightAvailable = pageHeight - 20;
+            const heightToPrint = Math.min(remainingHeight, pageHeightAvailable);
+            
+            pdf.addImage(imgData, 'PNG', 10, yPosition, imgWidth, heightToPrint);
+            remainingHeight -= heightToPrint;
+            
+            if (remainingHeight > 0) {
+                pdf.addPage();
+                yPosition = 10;
+            }
+        }
+        
         pdf.save('schema-uncinetto.pdf');
     } catch(err) {
         alert('Errore nel salvataggio PDF: ' + err.message);
